@@ -21,7 +21,21 @@ const app = express();
 app.use(morgan("common")); //log the http layer
 app.use(express.json()); //parse incoming json data from any POST or PUT request's body
 app.use(cookieParser());
-app.use(cors());
+// app.use(cors());
+
+//Rolled out our own Cors middleware
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Content-Length, Origin, X-Requested-With, Accept, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE, OPTIONS"
+  );
+  next();
+});
 
 //routes
 app.use("/users", usersRouter);
