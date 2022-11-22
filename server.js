@@ -7,7 +7,7 @@ mongoose.Promise = global.Promise; //making mongoose use JS promise instead of i
 const morgan = require("morgan");
 const helmet = require("helmet"); //helps to hide sensitive header info
 const cookieParser = require("cookie-parser");
-// const cors = require('cors');
+const cors = require("cors");
 
 const { DATABASE_URL, PORT } = require("./config");
 
@@ -21,6 +21,7 @@ const app = express();
 app.use(morgan("common")); //log the http layer
 app.use(express.json()); //parse incoming json data from any POST or PUT request's body
 app.use(cookieParser());
+app.use(cors());
 
 //routes
 app.use("/users", usersRouter);
