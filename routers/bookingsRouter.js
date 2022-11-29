@@ -53,7 +53,8 @@ router.post("/", (req, res, next) => {
   //The front end will send the host as an id <----------💣💣💣💣💣💣💣💣💣💣
   //We actually don't even want the host to be able to book for the guest.
   //The checks below should only apply to the editing/updating of the booking.
-
+  const userId = req.userId;
+  console.log("USER ID: " + userId);
   console.log("creating new booking");
   //Not sure if we want the dates to be calculated from the server. Prob yes, then if it needs to be
   //checked or converted for fees, we calculate their local time with our server time and send it back
@@ -61,7 +62,7 @@ router.post("/", (req, res, next) => {
   //Maybe for simplicity, we just make the date info come from the front end/the user's clock.
   //To do this, we must instantiate the Date() object on the client-side which refs the browser clock.
   const requiredFields = [
-    "bookingDate",
+    // "bookingDate",
     "checkIn",
     "checkOut",
     "guest",
@@ -72,12 +73,12 @@ router.post("/", (req, res, next) => {
   //we can say if req.body.guest === req.userId || req.body.host === req.userId
   //This ensures that it's either the user that logged in or the owner of the lot that is logged in
 
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    if (!req.body[field]) {
-      return res.send(`missing ${field} in request body!`);
-    }
-  }
+  // for (let i = 0; i < requiredFields.length; i++) {
+  //   const field = requiredFields[i];
+  //   if (!req.body[field]) {
+  //     return res.send(`missing ${field} in request body!`);
+  //   }
+  // }
 
   //grab userId that was injected by checkAuth and create the "host" key with it.
   req.body.guest = req.userId;

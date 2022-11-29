@@ -46,18 +46,28 @@ router.get("/", (req, res, next) => {
     });
 });
 
+//GET parkings bu USER id
+router.get("/user/:userId", (req, res, next) => {
+  console.log("getting all parkings by userId");
+
+  Parking.find({ host: req.params.userId })
+    .then((parkings) => {
+      return res
+        .status(200)
+        .json(parkings.map((parking) => parking.censorParking()));
+    })
+    .catch((err) => {
+      const message = `Failed to fetch any parkings`;
+      return next(err, message);
+    });
+});
+
 router.use(checkAuth); //MIDDLEWARE <--------------------------------
 
 //POST new parking
 router.post("/", (req, res, next) => {
   console.log("creating new parking");
-  const requiredFields = [
-    "title",
-    "description",
-    "spaces",
-    "address",
-    "location",
-  ];
+  const requiredFields = ["title", "description", "spaces", "address"];
 
   for (let i = 0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
@@ -70,34 +80,36 @@ router.post("/", (req, res, next) => {
   req.body.host = req.userId;
 
   //-------here is the code to get the coordinates from a string address...
-  // axios
-  //   .get(
-  //     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(req.body.address)}&key=${GOOGLE_API_KEY}`
-  //   )
-  //   .then((response) => {
-  //     console.log(response.data.results[0].geometry.location);
-  //     req.body.location = response.data.results[0].geometry.location; <--adding the location property to req.body which holds the coordinates.
+  axios
+    .get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        req.body.address
+      )}&key=${GOOGLE_API_KEY}`
+    )
+    .then((response) => {
+      console.log(response.data.results[0].geometry.location);
+      req.body.location = response.data.results[0].geometry.location; //<--adding the location property to req.body which holds the coordinates.
+      console.log(req.body);
+      // **⛏️----INSERT THE REST OF THE CODE IN HERE like Parking.create(...) and fix the array code for host to use push instead of User..... ----**
+      Parking.create(req.body)
+        .then((prk) => {
+          User.findById(req.userId).then((usr) => {
+            const newArray = [...usr.parkings]; //creating a new parkings array that has all the user's old parking plus the new parking id we just created
+            newArray.push(prk.id);
 
-  // **⛏️----INSERT THE REST OF THE CODE IN HERE like Parking.create(...) and fix the array code for host to use push instead of User..... ----**
-
-  //   });
-  //---------end of get coordinates
-
-  Parking.create(req.body)
-    .then((prk) => {
-      User.findById(req.userId).then((usr) => {
-        const newArray = [...usr.parkings]; //creating a new parkings array that has all the user's old parking plus the new parking id we just created
-        newArray.push(prk.id);
-
-        User.findByIdAndUpdate(req.userId, { parkings: newArray }).then(() => {
-          return res.status(201).json(prk);
+            User.findByIdAndUpdate(req.userId, { parkings: newArray }).then(
+              () => {
+                return res.status(201).json(prk);
+              }
+            );
+          });
+        })
+        .catch((err) => {
+          const message = `Sorry, there was an issue creating the Parking :S`;
+          return next({ err, message });
         });
-      });
-    })
-    .catch((err) => {
-      const message = `Sorry, there was an issue creating the Parking :S`;
-      return next({ err, message });
     });
+  //---------end of get coordinates
 }); //--------END
 
 //Update parking using id
@@ -121,7 +133,6 @@ router.patch("/:id", (req, res, next) => {
       const updateableFields = [
         "title",
         "description",
-        "pictures",
         "spaces",
         "covered",
         "indoor",

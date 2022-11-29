@@ -48,10 +48,12 @@ const createNewUser = (req, res, next) => {
     if (!req.body[field]) {
       return res.send(`missing ${field} in request body!`);
     }
-  }
+  } //end of field validation
 
   //normalize email/make lowercase.
   req.body.email = req.body.email.toLowerCase();
+
+  //CHECK IF USER EXISTS FIRST (fix this)⛏
 
   //encryt password
   bcrypt.hash(req.body.password, 12).then((encryptedPw) => {
@@ -62,13 +64,11 @@ const createNewUser = (req, res, next) => {
       .then((usr) => {
         const token = jwt.sign(
           { userId: usr.id, email: usr.email },
-          JWT_KEY_SECRET
+          JWT_KEY_SECRET,
+          { expiresIn: "2h" }
         ); //server watermark is the second argument
 
-        return res
-          .status(201)
-          .cookie("access_token", token)
-          .json(usr.censorUserInfo());
+        return res.status(201).json({ ...usr.censorUserInfo(), token });
       })
       .catch((err) => {
         //🧺laundry shoot
@@ -108,7 +108,8 @@ const login = (req, res, next) => {
         JWT_KEY_SECRET
       );
 
-      return res.status(200).cookie("access_token", token).json(usr);
+      // return res.status(200).cookie("access_token", token).json(usr);
+      return res.status(201).json({ ...usr.censorUserInfo(), token });
     });
   });
 }; //---------------------------------END🏁🏁-----------
@@ -149,6 +150,27 @@ const updateUser = (req, res, next) => {
     });
 }; //--------------END
 
+//UPDATE User AVATAR
+const updateAvatar = (req, res, next) => {
+  const options = {
+    apiKey: "cacaa3c91ff066da98b3a1e60e1fe8d0", // MANDATORY apikey for imgBB
+    base64string: req.body.base64string,
+    // OPTIONAL: pass base64-encoded image (max 32Mb)
+  };
+  imgbbUploader(options)
+    .then((response) => {
+      // res.json(response);
+      console.log(response);
+      //Now find the user by id and update
+      User.findByIdAndUpdate(req.params.userId, { image: response }).then(
+        (usr) => {
+          return res.status(200).send("Updated user successfully");
+        }
+      );
+    })
+    .catch((error) => console.error(error));
+};
+
 //DELETE User
 const deleteUser = (req, res, next) => {
   console.log(`Deleting user with id of ${req.params.id}`);
@@ -184,4 +206,5 @@ module.exports = {
   login,
   updateUser,
   deleteUser,
+  updateAvatar,
 };

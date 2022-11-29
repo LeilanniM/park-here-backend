@@ -4,8 +4,9 @@ const { JWT_KEY_SECRET } = require("../config");
 //Auth middleware
 const checkAuth = (req, res, next) => {
   try {
-    const token = req.cookies.access_token; //exctract jwt cookie from request object.
-
+    // const token = req.cookies.access_token; //exctract jwt cookie from request object.
+    const token = req.headers.authorization.split(" ")[1]; //Authorization: 'Bearer Token'
+    console.log(token);
     if (!token) {
       console.log("no token found, authentication failed.");
       return res.send("Access Denied 🤬");

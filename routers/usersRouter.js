@@ -7,6 +7,7 @@ const {
   login,
   updateUser,
   deleteUser,
+  updateAvatar,
 } = require("../controllers/usersController");
 const { checkAuth } = require("../middleware/checkAuth");
 const router = express.Router();
@@ -22,9 +23,11 @@ router.post("/signup", createNewUser); //---end of post route----
 
 //LOGIN
 router.post("/login", login);
+// router.post("/:userId/avatar", updateAvatar);
 
 router.use(checkAuth); //MIDDLEWARE <--------------------------------
 
+// router.post("/:userId/avatar", updateAvatar);
 //UPDATE - AUTHENTICATION
 router.patch("/:id", updateUser);
 

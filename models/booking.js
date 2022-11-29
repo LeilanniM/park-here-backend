@@ -10,12 +10,17 @@ const vehicleSchema = mongoose.Schema({
 });
 
 const bookingSchema = mongoose.Schema({
-  bookingDate: [{ type: Date }],
-  checkIn: [{ type: Date }],
-  checkOut: [{ type: Date }],
+  bookingDate: { type: Date, default: Date.now() },
+  checkIn: { type: Date },
+  checkOut: { type: Date },
   //   confirmationNum: { type: String }, //we will generate this using a uuid npm package of some sort
   guest: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  vehicles: [vehicleSchema],
+  // vehicles: [vehicleSchema],
+  vehicle: {
+    color: { type: String },
+    licensePlate: { type: String },
+    vehicleType: { type: String, default: "car" },
+  },
   host: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   parking: {
     type: mongoose.Schema.Types.ObjectId,
