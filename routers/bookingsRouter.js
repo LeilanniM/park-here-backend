@@ -86,13 +86,14 @@ router.post("/", (req, res, next) => {
   //Calculate total cost here and then add it to the req.body.totalCost<-----------💣💣💣
 
   Booking.create(req.body)
-    .then((prk) => {
+    .then((bk) => {
       User.findById(req.userId).then((usr) => {
-        const newArray = [...usr.parkings]; //creating a new parkings array that has all the user's old parking plus the new parking id we just created
-        newArray.push(prk.id);
+        const newArray = [...usr.bookings]; //creating a new bookings array that has all the user's old parking plus the new parking id we just created
+        console.log(newArray);
+        newArray.push(bk.id);
 
-        User.findByIdAndUpdate(req.userId, { parkings: newArray }).then(() => {
-          return res.status(201).json(prk);
+        User.findByIdAndUpdate(req.userId, { bookings: newArray }).then(() => {
+          return res.status(201).json(bk);
         });
       });
     })
